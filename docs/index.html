@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Sara Maemoto, CS184-184</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>I built a rasterizer which took saved graphics data and converted them into information for pixels on a computer. I implemented different rasterizing techniques including: supersampling, texture mapping, nearest filtering, bilinear filtering, and trilinear filtering. This is the first project I've ever done with graphics, so the entire process was an interesting learning experience for me. I think the most interesting technique that I learned was the bilinear and trilinear. The bilinear because of the use of weighting colors in order to produce a better representation of the point. The trilinear because of how it combines different map levels which helps to produce a depth to the image.</p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>In order to rasterize a triangle, you must first check to see if a pixel is within the given triangle. If it is, then you color that triangle with the given color information. My algorithm starts at 1 less than the lowest x and y position of the triangle and ends at the largest position.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Part1_test4.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test4.</figcaption>
+      </td>
+      <td>
+  </table>
+</div>
+
+<h3 align="middle">Part 2: Antialiasing triangles</h3>
+
+<p>In order to impliment supersampling, I needed to sample each pixel more than once at different positions. This required 2 for loops that iterated through each subdivision of the pixel. After attaining the color at each subpixel, I colored the entire pixel the average of the subpixels. Doing this reduces antialiasing, because although a pixel may not be entirely within the triangle, part of it might be and this lets the pixel retain some of the color. Creating more blended look.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Part1_test4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Basic Test4, Sample rate 1.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part2_test4_rate4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Basic Test4, Sample rate 4.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part2_test4_rate16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Basic Test4, Sample rate 16.</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 3: Transforms</h3>
+<p>I was attempting to make a dancing man in suspenders.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Groovy.png" align="middle" width="400px"/>
+        <figcaption align="middle">A Groovy old man.</figcaption>
+      </td>
+      <td>
+  </table>
+</div>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Part 4: Barycentric coordinates</h3>
+
+<p>Barycentric coordinates is a method of linearly interpolating a point in one triangle and then being able to find that point in a different triangle. For my purposes, it was useful in going from one coordinate system, the xy-plane, to another, the color spectrum. </p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Tri-Color.png" align="middle" width="400px"/>
+        <figcaption align="middle">3 colored point triangle.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part4_basic7.png" align="middle" width="400px"/>
+        <figcaption align="middle">Basic 7.</figcaption>
+      </td>
+      <td>
+  </table>
+</div>
+
+<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+
+<p>Pixel sampling is taking a sample from an image and then relating it to some type of texture. Nearest method is taking the related point in the texture map and finding the nearest texture pixel and giving the information to the pixel in the image. Bilinear method is taking the 4 nearest texture pixels in the texture map and finding a linear interpolation of the information in the 4 texture pixels and sending the results to the pixel in the image. You can see the biggest difference in the two methods at lower sample rates. This is because nearest does not take into account the pixels nearby which can create discontinuity between one pixel and the next.</p>
+
+<p>You can see a difference in the white lines when comparing the nearest method and bilinear method at a sample rate of 1. The nearest method misses a lot of the lines, while the bilinear method is able to pick more of them up.</p>
+
+<p>At a sample rate of 16, you can again see a difference in the white lines. At the higher sample rate, the nearest method creates a wavy type of line. While the bilinear method is able to keep a more consistent line.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Part5_Near1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest method, sample rate 1.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part5_Bilin1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear method, sample rate 1.</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/Part5_Near16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest method, sample rate 16.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part5_Bilin16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear method, sample rate 16.</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
+<p>Level sampling is a way to take care of depth when applying a texture map. Level sampling determines how zoomed in the texture should be for a particular pixel based on the change in the pixel. In order to implement this, you need to determine what the change in the pixel is in both the x and y directions. You can accomplish this by finding the barymetric coordinates for the pixel above and the pixel to the right of your pixel. This will give you their relative placement in the texture map. You can then determine what the change in the pixel is within the texture map, which will tell you what level you should use for this pixel in order to give the correct texture pixel.</p>
+
+<p>Increasing the number of samples per pixel requires a lot of memory, and is very slow. But it has very strong antialiasing power. Level sampling is not as slow, but requires more computational power compared to pixel sampling. The nearest method is fast, but has more aliasing compared to the bilinear method. The bilinear method requires more memory and computational power, but it's antialiasing affects are great.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/Part6_L0_Near.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level zero, nearest method.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part6_LBilin_Bilin.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level Bilinear, bilinear method.</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/Part6_LNear_Near.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level nearest, nearest method.</figcaption>
+      </td>
+      <td>
+        <img src="images/Part6_LNear_Bilin.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level nearest, bilinear method.</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Extra Information</h3>
+<p>With respect to UC Berkeley's academic integrety, I will not be posting the code associated with this project. Please contact me directly for my completed work.</p>
+
+</body>
+</html>
